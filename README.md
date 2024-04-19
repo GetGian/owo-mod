@@ -3,7 +3,7 @@ so, this is a mod.
 this mod runs owo commands, but you have to verify yourself after few tries.
 
 # install
-+ git clone https://github.com/dreamboy65/owo-mod
++ git clone https://github.com/GetGian/owo-mod
 + cd owo-mod
 + npm i
 
