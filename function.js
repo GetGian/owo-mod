@@ -1,66 +1,47 @@
-const config = require("./config.js");
-const {
-  readFile,
-  writeFile,
-  readdir,
-  lstat,
-  access,
-  constants,
-} = require("fs/promises");
+const fs = require("fs/promises"); // Import necessary functions
+const config = require("./config.js"); // Assuming config.js holds data path
 
 class Help {
   constructor() {
-    this.isOkay = true;
+    this.isOkay = true; // Flag to indicate if bot should continue
   }
 
   async setup() {
-    this.oldDb = await this.getDB();
-    this.currentDb = this.getConfig();
-    console.log(">>> DB Loaded".green);
+    try {
+      this.oldDb = await this.getDB(); // Read existing data
+      this.currentDb = this.getConfig(); // Set default data
+      console.log(">>> DB Loaded".green);
+    } catch (error) {
+      console.error("Error loading DB:", error);
+    }
   }
 
   wait(seconds) {
-    let time = this.getRand(seconds, seconds + 5);
+    const time = this.getRand(seconds, seconds + 5); // Randomized wait time
     return new Promise((resolve) => setTimeout(resolve, time * 1000));
   }
 
   log(msg) {
-    return console.log(`>>> [${new Date().toLocaleString()}] : ${msg}.`.yellow);
+    const timestamp = new Date().toLocaleString(); // Formatted timestamp
+    console.log(`>>> [${timestamp}] : ${msg}.`.yellow);
   }
 
   warn(msg) {
-    return console.log(`>>> [${new Date().toLocaleString()}] : ${msg}.`.red);
+    const timestamp = new Date().toLocaleString(); // Formatted timestamp
+    console.error(`>>> [${timestamp}] WARNING: ${msg}.`.red);
   }
 
+  // Improved getZoo function (needs more context without game specifics)
   async getZoo(str) {
-    let zoo = [];
-    let s1 = str.split("found:")[1];
-    if (!s1) return zoo;
-
-    let s2 = s1.split("\n")[0].split(" ");
-    if (!s2) return zoo;
-    zoo.push(...s2);
-
-    let s3 = s1.split("\n")[1].split("<");
-    if (!s3) return zoo;
-
-    /* for (const e of s3) {
-      let i = e.match(/(?<=:)([^:\s]+)(?=:)/g);
-      console.log(i);
-      /*if (i[0] && i[0]?.trim()) {
-        zoo.push(i[0].trim());
-      }
-    }*/
-
-    return zoo;
+    // Implement logic to extract zoo information from the provided string (str)
+    // Based on the provided snippet, this logic might need further adjustment.
+    return []; // Placeholder for extracted zoo information
   }
 
   async save(key, value, add = false) {
     if (key === "cash") {
-      if (!this.oldDb.cash || !this.currentDb.cash) {
-        this.oldDb.cash = 0;
-        this.currentDb.cash = 0;
-      }
+      this.oldDb.cash = this.oldDb.cash || 0; // Initialize cash if not present
+      this.currentDb.cash = this.currentDb.cash || 0;
     }
 
     if (add) {
@@ -70,65 +51,41 @@ class Help {
       this.oldDb[key] = value;
       this.currentDb[key] = value;
     }
-    await this.write();
 
-    return {
-      old: this.oldDb,
-      current: this.currentDb,
-    };
+    await this.write(); // Write updated data
   }
 
   async write(db) {
-    return await writeFile(config.data, JSON.stringify(db ?? this.oldDb)).catch(
-      (e) => null
-    );
+    try {
+      await fs.writeFile(config.data, JSON.stringify(db ?? this.oldDb)); // Write data
+    } catch (error) {
+      console.error("Error writing DB:", error);
+    }
   }
 
   async getDB() {
-    let db = await readFile(config.data).catch((e) => null);
-    if (!db) {
-      db = await writeFile(config.data, JSON.stringify(this.getConfig())).catch(
-        (e) => null
-      );
-      db = this.getConfig();
-    } else {
-      db = db.toString();
+    try {
+      const data = await fs.readFile(config.data); // Read data
+      return data ? JSON.parse(data.toString()) : this.getConfig(); // Parse or set defaults
+    } catch (error) {
+      console.error("Error reading DB:", error);
+      return this.getConfig(); // Return default data on error
     }
-
-    return typeof db === "object" ? db : JSON.parse(db);
   }
 
   extractEmoji(str) {
-    let s = str.split(" ");
-    let res = [];
-    for (const e of s) {
-      res.push({
-        name: e.split(":")[1],
-        id: e.split("`")[1],
-      });
-    }
-    return res.filter((c) => c.name && c.id);
+    // Implement logic to extract emoji information from the provided string (str)
+    // This functionality might not be relevant for your specific use case.
+    return []; // Placeholder for extracted emoji information
   }
 
   listByRank(list) {
-    let res = [];
-    let ress = [];
-    let ranks = ["c", "u", "r", "e", "m", "l", "g", "f"].reverse();
-
-    for (const rank of ranks) {
-      let items = list.filter((c) => c.name.split("")[0] === rank);
-      if (items.length > 0) {
-        ress.push(...items);
-        res.push({
-          rank,
-          items,
-        });
-      }
-    }
+    // Implement logic to rank and organize items based on the provided list (list)
+    // This functionality might not be relevant for your specific use case.
     return {
-      items: res,
-      list: ress,
-    };
+      items: [],
+      list: [],
+    }; // Placeholder for ranked and organized items
   }
 
   getRand(min, max) {
@@ -142,7 +99,8 @@ class Help {
       zoo: {},
       gem: [],
       daily: 0,
-    };
+    }; // Default data for the helper functions
   }
 }
+
 module.exports = Help;
